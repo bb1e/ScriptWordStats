@@ -3,6 +3,7 @@
 set -u
 
 
+
 # ---- COLORS ----
 
 PURPLE='\033[0;35m'
@@ -11,32 +12,50 @@ PINK='\033[1;35m'
 GREEN='\033[0;32m'
 LIGHTGREEN='\033[1;32m'
 RED='\033[0;31m'
-BLINK='\e[5m'
 ORANGE='\033[1;31m'
 LIGHTBLUE='\033[1;34m'
-NC='\033[0m'  # goes back to normal color ( no color )
-
-# https://misc.flogisoft.com/bash/tip_colors_and_formatting
-
-
-
-echo $#
+NC='\033[0m'  # goes back to normal color (no color)
+BLINK='\e[5m'
 
 
 
-# verifica a ausência de parâmetros---------------------
 
-if [[ $# < 3 ]]; then 
+
+# arguments and language check
+
+if [[ $# < 2 ]]; then 
 
 	echo -e "${RED}${BLINK} [ERROR]${RED} insufficient parameters"
     echo -e "${NC} ./word_stats.sh Cc|Pp|Tt INPUT [iso3166]"
     exit
     
+elif [[ $# == 2 ]]; then
+
+	stopwords=StopWords/en.stop_words.txt
+	sw=en
+	language=english
+	
+else
+
+	if [[ $3 == pt || $3 == Pt || $3 == PT || $3 == pT ]]; then
+	
+		stopwords=StopWords/pt.stop_words.txt
+		sw=pt
+		language=portuguese
+	
+	elif [[ $3 == en || $3 == En || $3 == EN || $3 == eN ]]; then
+	
+		stopwords=StopWords/en.stop_words.txt
+		sw=en
+		language=english
+		
+	fi
+    
 fi
 
 
  
- # verifica se o ficheiro existe ------------------------
+ # file check
  
 if [[ -e "$2" ]]; then
 
@@ -51,7 +70,7 @@ fi
 
 
 
-# verifica se o comando existe----------------------------
+# mode check
 
 if [[ $1 != c && $1 != C && $1 != p && $1 != P && $1 != t && $1 != T ]]; then
 
@@ -61,7 +80,7 @@ if [[ $1 != c && $1 != C && $1 != p && $1 != P && $1 != t && $1 != T ]]; then
 fi
 
  
-# verifica o formato do ficheiro e converte pdf para txt --
+# file type check and convertion
 
 if [[ $file != *.pdf && $file != *.txt ]]; then
 
@@ -79,6 +98,28 @@ else
 
 fi
 
+
+# check WORD_STATS_TOP 
+
+if [ -z ${WORD_STATS_TOP+x} ]; then 
+	
+	message="Environment variable 'WORD_STATS_TOP' is empty (using default 10)"
+	export WORD_STATS_TOP=10
+	
+elif [[ $WORD_STATS_TOP != *[[:digit:]]* ]]; then 
+
+	message="'$WORD_STATS_TOP' not a number (using default 10)"
+	export WORD_STATS_TOP=10
+	
+else
+
+	message="WORD_STATS_TOP = $WORD_STATS_TOP"
+
+fi
+
+
+
+
 # result files
 
 resultFile="result--"$2.txt
@@ -92,7 +133,7 @@ dat="result--"$2.dat
 # --------------------- FUNCTIONS ---------------------------
 
 
-# conta ordena lista e guarda num ficheiro com stop-words
+# break count order list and save file with stop-words
 
 function counting() {
 	
@@ -108,7 +149,7 @@ function counting() {
 
 
 
-# conta ordena lista e guarda num ficheiro sem stop-words
+# break count order list and save file without stop-words
 
 function withoutSw() {
 
@@ -117,7 +158,7 @@ function withoutSw() {
 	sort | \
 	uniq -ci | \
 	cat > aux-new_file.txt
-	grep -viwFf $stopwords aux-new_file.txt | \
+	grep -viwf $stopwords aux-new_file.txt | \
 	sort -nr | \
 	sed -e 's/ \+/\t/g' | \
 	nl > $resultFile
@@ -127,44 +168,24 @@ function withoutSw() {
 
 
 
-# menu de verificação da lingua 
-
-
-	if [[ $3 == pt ]]; then
-	stopwords=StopWords/pt.stop_words.txt
-	#echo -e "${NC} StopWords file 'pt': 'StopWords/pt.stop_words.txt' (205 words)"
-	
-elif [[ $3 == en ]]; then
-	stopwords=StopWords/en.stop_words.txt
-	echo -e "${NC} StopWords file 'en': 'StopWords/en.stop_words.txt' (ir ver)"
-	
-else
-	#echo -e "${RED} [ERROR] Invalid language! Only avaliable in portuguese (pt) or english (en)"
-	exit
-	
-fi
-
-
-
-
-
-
-
-
-
-
+# create word chart
 
 function chart() {
 
-	head -n 5 result--so.pdf.txt > result---ficha01.pdf.txt.dat
+	head -n $WORD_STATS_TOP $resultFile > $dat
+	
+	echo " " > bar.gnuplot
 	
 	{
 	
 	echo "set terminal png"
-	echo "set output \"out.png\""
+	echo "set output \"$resultFilePng\""
+	echo "set xlabel \"words\""
+	echo "set ylabel \"number of occurrences\""
+	echo "set xtics rotate"
 	echo "set boxwidth 0.5"
 	echo "set style fill solid"
-	echo "plot \"result---ficha01.pdf.txt.dat\" using 1:2:xtic(3) with boxes title \"# of occurrences\""
+	echo "plot \"$dat\" using 1:2:xtic(3) with boxes title \"# of occurrences\""
 		
 	}>> bar.gnuplot
 	
@@ -174,9 +195,12 @@ function chart() {
 
 
 
+# create html file
+
 function htmlfile() {
 
 	echo " " > $resultFileHtml
+	data=$(date)
 
 	{
 	echo "<!DOCTYPE html>"
@@ -185,13 +209,13 @@ function htmlfile() {
 	echo "<title>Word Stats Chart</title>"
 	echo "</head>"
 	echo "<body style=\"background-color: #FFC0CB;margin: 100px\">" 
-	echo "<h1 style=\"color: #FF1493;font-size: 40px;line-height: 150px;font-family: Courier\">Top 5 words-'ficha01.pdf'</h1>"
+	echo "<h1 style=\"color: #FF1493;text-align: center;font-size: 40px;line-height: 150px;font-family: Courier\">Top 5 words-'ficha01.pdf'</h1>"
 	echo "<p style=\"text-align: center;font-family: Courier\"> Top words for 'ficha01.pdf'</p>"
-	echo "<p style=\"text-align: center;font-family: Courier\"> Created: </p>"
+	echo "<p style=\"text-align: center;font-family: Courier\"> Created: $data</p>"
 	echo "<p style=\"text-align: center;font-family: Courier\"> (with stop words)</p>"
-	echo "<img src=\"out.png\">"
-	echo "<p> Authors: Bruna Leal, Pedro Sousa</p>"
-	echo "<p> Created: </p>"
+	echo "<p style=\"text-align: center\"><img src=\"$resultFilePng\"></p>"
+	echo "<p style=\"text-align: center;font-family: Courier\"> Authors: Bruna Leal, Pedro Sousa</p>"
+	echo "<p style=\"text-align: center;font-family: Courier\"> Created: $data</p>"
 	echo "</body>"
 	echo "</html>"
 	}>> $resultFileHtml
@@ -203,16 +227,18 @@ function htmlfile() {
 	
 
 
-# menu de opções ----------------------------------------
+# main menu ----------------------------------------
 
 
 if [[ $1 == c ]]; then
 
+	echo " "
+	echo " "
   	echo -e "${NC} '$2'" : $fileType
-  	echo -e "${NC} [INFO] Processing '$file'"
+  	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$file'"
   	echo -e "${NC} STOP WORDS will be filtered out"
   	echo " "
-  	echo -e "${PURPLE}${BLINK} COUNT MODE${PURPLE}"
+  	echo -e "${PINK}${BLINK} COUNT MODE${PURPLE}"
   	echo -e "${PINK} ----------------------------------------------------- ${PURPLE}"
   	echo " "
   	withoutSw
@@ -226,15 +252,20 @@ if [[ $1 == c ]]; then
 
   	echo -e $( ls -l -a $resultFile )  
   	echo -e $( wc -l < $resultFile ) distinct words
+  	echo " "
+  	echo " "
   	
   	
   
 elif [[ $1 == C ]]; then
-
+	
+	echo " "
+	echo " "
   	echo -e "${NC} '$2'" : $fileType
-  	echo -e "${NC} [INFO] Processing '$file'"
+  	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$file'"
   	echo -e "${NC}STOP WORDS will be counted"
-  	echo -e "${PURPLE}${BLINK} COUNT MODE${PURPLE}"
+  	echo " "
+  	echo -e "${PINK}${BLINK} COUNT MODE${PURPLE}"
   	echo -e "${PINK} ----------------------------------------------------- ${PURPLE}"
   	echo " "
   	counting 
@@ -248,78 +279,108 @@ elif [[ $1 == C ]]; then
   
   	echo -e $( ls -l -a $resultFile )
   	echo -e $( wc -l < $resultFile ) distinct words
+  	echo " "
+  	echo " "
   	
   	
   
 elif [[ $1 == p ]]; then
-
+	
+	echo " "
+	echo " "
   	echo -e "'$2'" : $fileType
-  	echo -e [INFO] Processing "'$file'"
-  	echo -e STOP WORDS will be filtered out
-  	# stopwords
-  	#echo $( ls -l -a $dat )
-  	#echo $( ls -l -a $resultFilePng )
-  	#echo $( ls -l -a $resultFileHtml )
-  	echo -e "Description: Execution in plot / remove stop words mode (lingua) to analyse the file "$2""
-  	echo -e Files produced: $resultFilePng and $resultFileHtml
+  	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$file'"
+  	echo -e STOP-WORDS will be filtered out
+  	echo "StopWords file '$sw': '$stopwords' ( $( wc -l < $stopwords ) words )"
+  	echo " "
+  	echo $( ls -l -a $dat )
+  	echo $( ls -l -a $resultFilePng )
+  	echo $( ls -l -a $resultFileHtml )
+  	echo " "
+  	echo -e "${ORANGE}Description: Plot Mode / remove stop-words mode ($language) ........ analyzing file "$2""
+  	echo -e Files produced: $resultFilePng and $resultFileHtml ${NC}
+  	echo " "
+  	echo " "
   
     withoutSw
     chart
   	htmlfile
-  	firefox $resultFileHtml
+  	firefox $resultFileHtml 2> /dev/null
 
   
   
 elif [[ $1 == P ]]; then
-
+	
+	echo " "
+	echo " "
  	echo -e "'$2'" : $fileType
- 	echo -e [INFO] Processing "'$file'"
-  	echo -e STOP WORDS will be counted
-  	# stopwords
-  	#echo $( ls -l -a $dat )
-  	#echo $( ls -l -a $resultFilePng )
-  	#echo $( ls -l -a $resultFileHtml )
-  
-    counting
+ 	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$file'"
+  	echo -e STOP-WORDS will be counted
+  	counting
   	chart
   	htmlfile
-  	firefox $resultFileHtml
+  	echo " "
+  	echo $( ls -l -a $dat ) #ver porque é q não assume
+  	echo $( ls -l -a $resultFilePng )
+  	echo $( ls -l -a $resultFileHtml )
+  	echo " "
+  	echo -e "${ORANGE}Description: Plot Mode / stop-words included ........ analyzing file "$2""
+  	echo -e Files produced: $resultFilePng and $resultFileHtml ${NC}
+  	echo " "
+  	echo " "
+  
+  	firefox $resultFileHtml 2> /dev/null
 
   
   
 elif [[ $1 == t ]]; then
-
-	echo -e "'$2'" : $fileType
-	echo -e [INFO] Processing "'$file'"
- 	echo -e STOP WORDS will be filtered out
+	
+	echo " "
+	echo " "
+	echo  "'$2'" : $fileType
+	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$file'"
+ 	echo  STOP WORDS will be filtered out
+ 	echo "StopWords file '$sw': '$stopwords' ( $( wc -l < $stopwords ) words )"
+ 	echo $message
   	withoutSw
   	echo " "
-	echo -e "${PINK}*************************************"
+	echo -e "${PINK}**********************************************"
 	echo " "
-	#echo "# TOP $WORD_STATS_TOP elements"
-	#head -n $WORD_STATS_TOP $resultFile
+	echo "             # TOP $WORD_STATS_TOP elements"
 	echo " "
-	echo -e "${PINK}*************************************"
+	echo " "
+	head -n $WORD_STATS_TOP $resultFile
+	echo " "
+	echo -e "${PINK}**********************************************"
 	echo " "
 	echo -e ${NC} $( ls -l -a $resultFile )
+	echo " "
+	echo " "
 	
   
   
 elif [[ $1 == T ]]; then
-
+	
+	echo " "
+	echo " "
 	echo "'$2'" : $fileType
-	echo [INFO] Processing "'$file'"
+	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$file'"
 	echo STOP WORDS will be counted
+	echo $message
     counting
     echo " "
-	echo -e "${PINK}*************************************"
+	echo -e "${PINK}**********************************************"
 	echo " "
-	#echo "# TOP $WORD_STATS_TOP elements"
-	#head -n $WORD_STATS_TOP $resultFile
+	echo "             # TOP $WORD_STATS_TOP elements"
 	echo " "
-	echo -e "${PINK}*************************************"
+	echo " "
+	head -n $WORD_STATS_TOP $resultFile
+	echo " "
+	echo -e "${PINK}**********************************************"
 	echo " "
 	echo -e ${NC} $( ls -l -a $resultFile )
+	echo " "
+	echo " "
   
 
 fi
