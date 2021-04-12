@@ -157,8 +157,8 @@ function withoutSw() {
 	cat $file | \
 	egrep -o -e "\b\w+\b" | \
 	sort | \
-	uniq -ci > aux-new_file.txt
-	grep -viwf $stopwords aux-new_file.txt | \
+	uniq -ci > new_file.txt
+	grep -vif $stopwords new_file.txt | \
 	sort -nr | \
 	sed -e 's/ \+/\t/g' | \
 	nl > $resultFile
