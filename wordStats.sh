@@ -42,6 +42,7 @@ else
 		stopwords=StopWords/pt.stop_words.txt
 		sw=pt
 		language=portuguese
+		
 	
 	elif [[ $3 == en || $3 == En || $3 == EN || $3 == eN ]]; then
 	
@@ -211,9 +212,9 @@ function htmlfile() {
 	echo "<h1 style=\"color: #FF1493;text-align: center;font-size: 40px;line-height: 150px;font-family: Courier\">Top 5 words-'ficha01.pdf'</h1>"
 	echo "<p style=\"text-align: center;font-family: Courier\"> Top words for 'ficha01.pdf'</p>"
 	echo "<p style=\"text-align: center;font-family: Courier\"> Created: $data</p>"
-	echo "<p style=\"text-align: center;font-family: Courier\"> (with stop words)</p>"
+	echo "<p style=\"text-align: center;font-family: Courier\"> ($message)</p>"
 	echo "<p style=\"text-align: center\"><img src=\"$resultFilePng\"></p>"
-	echo "<p style=\"text-align: center;font-family: Courier\"> Authors: Bruna Leal, Pedro Sousa</p>"
+	echo "<p style=\"text-align: center;font-family: Courier\"> Authors: Barbie Chan</p>"
 	echo "<p style=\"text-align: center;font-family: Courier\"> Created: $data</p>"
 	echo "</body>"
 	echo "</html>"
@@ -285,6 +286,7 @@ elif [[ $1 == C ]]; then
   
 elif [[ $1 == p ]]; then
 	
+	message="without stop-words"
 	echo " "
 	echo " "
   	echo -e "'$2'" : $fileType
@@ -310,6 +312,7 @@ elif [[ $1 == p ]]; then
   
 elif [[ $1 == P ]]; then
 	
+	message="without stop-words"
 	echo " "
 	echo " "
  	echo -e "'$2'" : $fileType
