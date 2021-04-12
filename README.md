@@ -2,7 +2,7 @@
 
 > This script analyzes all the words in a file and makes a statistical analysis of it.
 
-![](https://raw.githubusercontent.com/bbarbie/ScriptWordStats/main/ws.jpg)
+![](https://raw.githubusercontent.com/bbarbie/ScriptWordStats/main/wsimg.jpg)
 
 ## Installation
 
