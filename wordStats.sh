@@ -157,8 +157,8 @@ function withoutSw() {
 	cat $file | \
 	egrep -o -e "\b\w+\b" | \
 	sort | \
-	uniq -ci > new_file.txt
-	grep -vif $stopwords new_file.txt | \
+	uniq -ci > aux-new_file.txt
+	grep -viwf $stopwords aux-new_file.txt | \
 	sort -nr | \
 	sed -e 's/ \+/\t/g' | \
 	nl > $resultFile
@@ -214,7 +214,7 @@ function htmlfile() {
 	echo "<p style=\"text-align: center;font-family: Courier\"> Created: $data</p>"
 	echo "<p style=\"text-align: center;font-family: Courier\"> ($message)</p>"
 	echo "<p style=\"text-align: center\"><img src=\"$resultFilePng\"></p>"
-	echo "<p style=\"text-align: center;font-family: Courier\"> Authors: Barbie Chan</p>"
+	echo "<p style=\"text-align: center;font-family: Courier\"> Authors: Bruna Leal, Pedro Sousa</p>"
 	echo "<p style=\"text-align: center;font-family: Courier\"> Created: $data</p>"
 	echo "</body>"
 	echo "</html>"
@@ -297,22 +297,23 @@ elif [[ $1 == p ]]; then
   	echo $( ls -l -a $dat )
   	echo $( ls -l -a $resultFilePng )
   	echo $( ls -l -a $resultFileHtml )
+  	withoutSw
+    chart
+  	htmlfile
   	echo " "
   	echo -e "${ORANGE}Description: Plot Mode / remove stop-words mode ($language) ........ analyzing file "$2""
   	echo -e Files produced: $resultFilePng and $resultFileHtml ${NC}
   	echo " "
   	echo " "
   
-    withoutSw
-    chart
-  	htmlfile
+
   	firefox $resultFileHtml 2> /dev/null
 
   
   
 elif [[ $1 == P ]]; then
 	
-	message="without stop-words"
+	message="with stop-words"
 	echo " "
 	echo " "
  	echo -e "'$2'" : $fileType
