@@ -157,8 +157,8 @@ function withoutSw() {
 	cat $file | \
 	egrep -o -e "\b\w+\b" | \
 	sort | \
-	uniq -ci > aux-new_file.txt
-	grep -viwf $stopwords aux-new_file.txt | \
+	uniq -ci | \
+	grep -viwf $stopwords | \
 	sort -nr | \
 	sed -e 's/ \+/\t/g' | \
 	nl > $resultFile
@@ -180,12 +180,16 @@ function chart() {
 	
 	echo "set terminal png"
 	echo "set output \"$resultFilePng\""
+	echo "set title \"Top word occurrence chart\" font \"courrier, 20px\" textcolor \"#800080\" "
 	echo "set xlabel \"words\""
 	echo "set ylabel \"number of occurrences\""
 	echo "set xtics rotate"
 	echo "set boxwidth 0.5"
+	echo "set grid"
+	echo "set tics nomirror out scale 0.75"
 	echo "set style fill solid"
-	echo "plot \"$dat\" using 1:2:xtic(3) with boxes title \"# of occurrences\""
+	echo "plot \"$dat\" using 1:2:xtic(3) title \"# of occurrences\" with boxes, \
+	      \"$dat\" using 1:(2):2 notitle with labels"
 		
 	}>> bar.gnuplot
 	
@@ -214,7 +218,7 @@ function htmlfile() {
 	echo "<p style=\"text-align: center;font-family: Courier\"> Created: $data</p>"
 	echo "<p style=\"text-align: center;font-family: Courier\"> ($message)</p>"
 	echo "<p style=\"text-align: center\"><img src=\"$resultFilePng\"></p>"
-	echo "<p style=\"text-align: center;font-family: Courier\"> Authors: Bruna Leal, Pedro Sousa</p>"
+	echo "<p style=\"text-align: center;font-family: Courier\"> Authors: Barbie Chan</p>"
 	echo "<p style=\"text-align: center;font-family: Courier\"> Created: $data</p>"
 	echo "</body>"
 	echo "</html>"
