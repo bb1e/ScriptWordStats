@@ -9,7 +9,6 @@ set -u
 PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
 PINK='\033[1;35m'
-GREEN='\033[0;32m'
 LIGHTGREEN='\033[1;32m'
 RED='\033[0;31m'
 ORANGE='\033[1;31m'
@@ -237,7 +236,7 @@ if [[ $1 == c ]]; then
 
 	echo " "
 	echo " "
-  	echo -e "${NC} '$2'" : $fileType
+  	echo -e "${CYAN} '$2'" : $fileType
   	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$file'"
   	echo -e "${NC} STOP WORDS will be filtered out"
   	echo " "
@@ -264,7 +263,7 @@ elif [[ $1 == C ]]; then
 	
 	echo " "
 	echo " "
-  	echo -e "${NC} '$2'" : $fileType
+  	echo -e "${CYAN} '$2'" : $fileType
   	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$file'"
   	echo -e "${NC}STOP WORDS will be counted"
   	echo " "
@@ -292,17 +291,17 @@ elif [[ $1 == p ]]; then
 	message="without stop-words"
 	echo " "
 	echo " "
-  	echo -e "'$2'" : $fileType
+  	echo -e "${CYAN}'$2'" : $fileType
   	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$file'"
   	echo -e STOP-WORDS will be filtered out
   	echo "StopWords file '$sw': '$stopwords' ( $( wc -l < $stopwords ) words )"
+  	withoutSw
+    chart
+  	htmlfile
   	echo " "
   	echo $( ls -la $dat )
   	echo $( ls -la $resultFilePng )
   	echo $( ls -la $resultFileHtml )
-  	withoutSw
-    chart
-  	htmlfile
   	echo " "
   	echo -e "${ORANGE}Description: Plot Mode / remove stop-words mode ($language) ........ analyzing file "$2""
   	echo -e Files produced: $resultFilePng and $resultFileHtml ${NC}
@@ -319,7 +318,7 @@ elif [[ $1 == P ]]; then
 	message="with stop-words"
 	echo " "
 	echo " "
- 	echo -e "'$2'" : $fileType
+ 	echo -e "${CYAN}'$2'" : $fileType
  	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$file'"
   	echo -e STOP-WORDS will be counted
   	counting
@@ -343,7 +342,7 @@ elif [[ $1 == t ]]; then
 	
 	echo " "
 	echo " "
-	echo  "'$2'" : $fileType
+	echo -e "${CYAN}'$2'" : $fileType
 	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$file'"
  	echo  STOP WORDS will be filtered out
  	echo "StopWords file '$sw': '$stopwords' ( $( wc -l < $stopwords ) words )"
@@ -369,7 +368,7 @@ elif [[ $1 == T ]]; then
 	
 	echo " "
 	echo " "
-	echo "'$2'" : $fileType
+	echo -e "${CYAN}'$2'" : $fileType
 	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$file'"
 	echo STOP WORDS will be counted
 	echo $message
