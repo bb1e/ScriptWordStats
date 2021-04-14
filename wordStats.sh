@@ -13,7 +13,6 @@ GREEN='\033[0;32m'
 LIGHTGREEN='\033[1;32m'
 RED='\033[0;31m'
 ORANGE='\033[1;31m'
-LIGHTBLUE='\033[1;34m'
 NC='\033[0m'  # goes back to normal color (no color)
 BLINK='\e[5m'
 
@@ -218,7 +217,7 @@ function htmlfile() {
 	echo "<p style=\"text-align: center;font-family: Courier\"> Created: $data</p>"
 	echo "<p style=\"text-align: center;font-family: Courier\"> ($message)</p>"
 	echo "<p style=\"text-align: center\"><img src=\"$resultFilePng\"></p>"
-	echo "<p style=\"text-align: center;font-family: Courier\"> Authors: Barbie Chan</p>"
+	echo "<p style=\"text-align: center;font-family: Courier\"> Authors: Bruna Leal, Pedro Sousa</p>"
 	echo "<p style=\"text-align: center;font-family: Courier\"> Created: $data</p>"
 	echo "</body>"
 	echo "</html>"
@@ -254,7 +253,7 @@ if [[ $1 == c ]]; then
   	echo " "
   	echo -e ${NC} RESULTS: "'$resultFile'"
 
-  	echo -e $( ls -l -a $resultFile )  
+  	echo -e $( ls -la $resultFile )  
   	echo -e $( wc -l < $resultFile ) distinct words
   	echo " "
   	echo " "
@@ -281,7 +280,7 @@ elif [[ $1 == C ]]; then
   	echo " "
   	echo -e ${NC} RESULTS: "'$resultFile'"
   
-  	echo -e $( ls -l -a $resultFile )
+  	echo -e $( ls -la $resultFile )
   	echo -e $( wc -l < $resultFile ) distinct words
   	echo " "
   	echo " "
@@ -298,9 +297,9 @@ elif [[ $1 == p ]]; then
   	echo -e STOP-WORDS will be filtered out
   	echo "StopWords file '$sw': '$stopwords' ( $( wc -l < $stopwords ) words )"
   	echo " "
-  	echo $( ls -l -a $dat )
-  	echo $( ls -l -a $resultFilePng )
-  	echo $( ls -l -a $resultFileHtml )
+  	echo $( ls -la $dat )
+  	echo $( ls -la $resultFilePng )
+  	echo $( ls -la $resultFileHtml )
   	withoutSw
     chart
   	htmlfile
@@ -327,9 +326,9 @@ elif [[ $1 == P ]]; then
   	chart
   	htmlfile
   	echo " "
-  	echo $( ls -l -a $dat ) #ver porque é q não assume
-  	echo $( ls -l -a $resultFilePng )
-  	echo $( ls -l -a $resultFileHtml )
+  	echo $( ls -la $dat ) #ver porque é q não assume
+  	echo $( ls -la $resultFilePng )
+  	echo $( ls -la $resultFileHtml )
   	echo " "
   	echo -e "${ORANGE}Description: Plot Mode / stop-words included ........ analyzing file "$2""
   	echo -e Files produced: $resultFilePng and $resultFileHtml ${NC}
@@ -356,7 +355,7 @@ elif [[ $1 == t ]]; then
 	echo "             # TOP $WORD_STATS_TOP elements"
 	echo " "
 	echo " "
-	head -n $WORD_STATS_TOP $resultFile
+	head -n $WORD_STATS_TOP $resultFile 
 	echo " "
 	echo -e "${PINK}**********************************************"
 	echo " "
