@@ -22,9 +22,11 @@ BLINK='\e[5m'
 # arguments and language check
 
 if [[ $# < 2 ]]; then 
-
+	
+	echo " "
 	echo -e "${RED}${BLINK} [ERROR]${RED} insufficient parameters"
     echo -e "${NC} ./word_stats.sh Cc|Pp|Tt INPUT [iso3166]"
+    echo " "
     exit
     
 elif [[ $# == 2 ]]; then
@@ -53,6 +55,22 @@ else
 fi
 
 
+
+
+# mode check
+
+if [[ $1 != c && $1 != C && $1 != p && $1 != P && $1 != t && $1 != T ]]; then
+	
+    echo " "
+ 	echo -e "${RED}${BLINK} [ERROR]${RED} unknown command '$1'${NC}"
+ 	echo " "
+ 	exit
+  
+fi
+
+
+
+
  
  # file check
  
@@ -61,35 +79,30 @@ if [[ -e "$2" ]]; then
 	file=$2
 
 else
-
-	echo -e "${RED}${BLINK} [ERROR]${RED} can't find file '$2'"
+	
+	echo " "
+	echo -e "${RED}${BLINK} [ERROR]${RED} can't find file '$2'${NC}"
+	echo " "
 	exit
 	
 fi
 
 
 
-# mode check
-
-if [[ $1 != c && $1 != C && $1 != p && $1 != P && $1 != t && $1 != T ]]; then
-
-  echo -e "${RED}${BLINK} [ERROR]${RED} unknown command '$1'"
-  exit
-  
-fi
-
  
 # file type check and convertion
 
 if [[ $file != *.pdf && $file != *.txt ]]; then
 
-	echo -e "${RED}${BLINK} [ERROR]${RED} Invalid file format. Make sure the file is .pdf or .txt"
+	echo " "
+	echo -e "${RED}${BLINK} [ERROR]${RED} Invalid file format. Make sure the file is .pdf or .txt ${NC}"
+	echo " "
 	exit
 
 elif [[ $file == *.pdf ]]; then
 
-	pdftotext -layout $file new_file.txt
-	file=new_file.txt
+	pdftotext -layout $file $2.txt
+	file=$2.txt
 	fileType="PDF file"
 	
 else
@@ -137,12 +150,12 @@ dat="result--"$2.dat
 function counting() {
 	
 	cat $file | \
-	egrep -o -e "\b\w+\b" | \
+	egrep -oe "\b\w+\b" | \
 	sort | \
 	uniq -ci | \
 	sort -nr | \
-	sed -e 's/ \+/\t/g' | \
-	nl > $resultFile
+	sed 's/ \+/\t/g' | \
+	nl
 	
 }
 
@@ -153,13 +166,13 @@ function counting() {
 function withoutSw() {
 
 	cat $file | \
-	egrep -o -e "\b\w+\b" | \
+	egrep -oe "\b\w+\b" | \
 	sort | \
 	uniq -ci | \
 	grep -viwf $stopwords | \
 	sort -nr | \
-	sed -e 's/ \+/\t/g' | \
-	nl > $resultFile
+	sed 's/ \+/\t/g' | \
+	nl
 	
 }
 
@@ -216,7 +229,7 @@ function htmlfile() {
 	echo "<p style=\"text-align: center;font-family: Courier\"> Created: $data</p>"
 	echo "<p style=\"text-align: center;font-family: Courier\"> ($message)</p>"
 	echo "<p style=\"text-align: center\"><img src=\"$resultFilePng\"></p>"
-	echo "<p style=\"text-align: center;font-family: Courier\"> Authors: Bruna Leal, Pedro Sousa</p>"
+	echo "<p style=\"text-align: center;font-family: Courier\"> Authors: Barbie Chan</p>"
 	echo "<p style=\"text-align: center;font-family: Courier\"> Created: $data</p>"
 	echo "</body>"
 	echo "</html>"
@@ -239,12 +252,13 @@ if [[ $1 == c ]]; then
   	echo -e "${CYAN} '$2'" : $fileType
   	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$file'"
   	echo -e "${NC} STOP WORDS will be filtered out"
+  	echo " StopWords file '$sw': '$stopwords' ( $( wc -l < $stopwords ) words )"
   	echo " "
   	echo -e "${PINK}${BLINK} COUNT MODE${PURPLE}"
   	echo -e "${PINK} ----------------------------------------------------- ${PURPLE}"
   	echo " "
-  	withoutSw
-  	head -n 10 $resultFile
+  	withoutSw > $resultFile
+  	head -n 8 $resultFile
   	echo " "
   	echo -e "${PURPLE}    (...)"
   	echo " "
@@ -252,7 +266,7 @@ if [[ $1 == c ]]; then
   	echo " "
   	echo -e ${NC} RESULTS: "'$resultFile'"
 
-  	echo -e $( ls -la $resultFile )  
+  	ls -la $resultFile
   	echo -e $( wc -l < $resultFile ) distinct words
   	echo " "
   	echo " "
@@ -265,13 +279,13 @@ elif [[ $1 == C ]]; then
 	echo " "
   	echo -e "${CYAN} '$2'" : $fileType
   	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$file'"
-  	echo -e "${NC}STOP WORDS will be counted"
+  	echo -e "${NC} STOP WORDS will be counted"
   	echo " "
   	echo -e "${PINK}${BLINK} COUNT MODE${PURPLE}"
   	echo -e "${PINK} ----------------------------------------------------- ${PURPLE}"
   	echo " "
-  	counting 
-  	head -n 10 $resultFile
+  	counting > $resultFile
+  	head -n 8 $resultFile
   	echo " "
   	echo -e "${PURPLE}    (...)"
   	echo " "
@@ -279,7 +293,7 @@ elif [[ $1 == C ]]; then
   	echo " "
   	echo -e ${NC} RESULTS: "'$resultFile'"
   
-  	echo -e $( ls -la $resultFile )
+  	ls -la $resultFile
   	echo -e $( wc -l < $resultFile ) distinct words
   	echo " "
   	echo " "
@@ -288,20 +302,20 @@ elif [[ $1 == C ]]; then
   
 elif [[ $1 == p ]]; then
 	
-	message="without stop-words"
+	message="'$sw' stop-words removed"
 	echo " "
 	echo " "
   	echo -e "${CYAN}'$2'" : $fileType
-  	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$file'"
-  	echo -e STOP-WORDS will be filtered out
-  	echo "StopWords file '$sw': '$stopwords' ( $( wc -l < $stopwords ) words )"
-  	withoutSw
+  	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$2'"
+  	echo " STOP WORDS will be filtered out"
+  	echo " StopWords file '$sw': '$stopwords' ( $( wc -l < $stopwords ) words )"
+  	withoutSw > $resultFile
     chart
   	htmlfile
   	echo " "
-  	echo $( ls -la $dat )
-  	echo $( ls -la $resultFilePng )
-  	echo $( ls -la $resultFileHtml )
+  	ls -la $dat
+  	ls -la $resultFilePng
+  	ls -la $resultFileHtml
   	echo " "
   	echo -e "${ORANGE}Description: Plot Mode / remove stop-words mode ($language) ........ analyzing file "$2""
   	echo -e Files produced: $resultFilePng and $resultFileHtml ${NC}
@@ -318,16 +332,16 @@ elif [[ $1 == P ]]; then
 	message="with stop-words"
 	echo " "
 	echo " "
- 	echo -e "${CYAN}'$2'" : $fileType
- 	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$file'"
-  	echo -e STOP-WORDS will be counted
-  	counting
+ 	echo -e "${CYAN} '$2'" : $fileType
+ 	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$2'"
+  	echo " STOP-WORDS will be counted"
+  	counting > $resultFile
   	chart
   	htmlfile
   	echo " "
-  	echo $( ls -la $dat ) #ver porque é q não assume
-  	echo $( ls -la $resultFilePng )
-  	echo $( ls -la $resultFileHtml )
+  	ls -la $dat
+  	ls -la $resultFilePng
+  	ls -la $resultFileHtml
   	echo " "
   	echo -e "${ORANGE}Description: Plot Mode / stop-words included ........ analyzing file "$2""
   	echo -e Files produced: $resultFilePng and $resultFileHtml ${NC}
@@ -342,23 +356,24 @@ elif [[ $1 == t ]]; then
 	
 	echo " "
 	echo " "
-	echo -e "${CYAN}'$2'" : $fileType
-	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$file'"
- 	echo  STOP WORDS will be filtered out
- 	echo "StopWords file '$sw': '$stopwords' ( $( wc -l < $stopwords ) words )"
- 	echo $message
-  	withoutSw
+	echo -e "${CYAN} '$2'" : $fileType
+	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$2'"
+ 	echo " STOP WORDS will be filtered out"
+ 	echo " StopWords file '$sw': '$stopwords' ( $( wc -l < $stopwords ) words )"
+ 	echo " $message"
+  	withoutSw | \
+  	head -n $WORD_STATS_TOP > $resultFile
   	echo " "
 	echo -e "${PINK}**********************************************"
 	echo " "
 	echo "             # TOP $WORD_STATS_TOP elements"
 	echo " "
 	echo " "
-	head -n $WORD_STATS_TOP $resultFile 
+	cat $resultFile 
 	echo " "
-	echo -e "${PINK}**********************************************"
+	echo -e "${PINK}**********************************************${NC}"
 	echo " "
-	echo -e ${NC} $( ls -l -a $resultFile )
+	ls -l -a $resultFile
 	echo " "
 	echo " "
 	
@@ -368,22 +383,23 @@ elif [[ $1 == T ]]; then
 	
 	echo " "
 	echo " "
-	echo -e "${CYAN}'$2'" : $fileType
-	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$file'"
-	echo STOP WORDS will be counted
-	echo $message
-    counting
+	echo -e "${CYAN} '$2'" : $fileType
+	echo -e "${LIGHTGREEN}[INFO]${NC} Processing '$2'"
+	echo " STOP WORDS will be counted"
+	echo " $message"
+    counting | \
+    head -n $WORD_STATS_TOP > $resultFile
     echo " "
 	echo -e "${PINK}**********************************************"
 	echo " "
 	echo "             # TOP $WORD_STATS_TOP elements"
 	echo " "
 	echo " "
-	head -n $WORD_STATS_TOP $resultFile
+	cat $resultFile
 	echo " "
-	echo -e "${PINK}**********************************************"
+	echo -e "${PINK}**********************************************${NC}"
 	echo " "
-	echo -e ${NC} $( ls -l -a $resultFile )
+	ls -l -a $resultFile
 	echo " "
 	echo " "
   
