@@ -12,7 +12,6 @@ Only need to download the script, the StopWords folder and then make it executab
 ```sh
 "chmod u+x wordStats.sh"
 ```
-Ps: make sure you are in the same directory of the script
 
 ## Usage example
 
@@ -25,6 +24,8 @@ Command:
 ```sh
 ./word_stats.sh Cc|Pp|Tt INPUT [iso3166]
 ```
+
+Ps: make sure you are in the same directory of the script
 
 Modes:
 + C : performs the count of occurrences of each word with stop-words, saving the list in a text file 
