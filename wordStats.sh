@@ -116,12 +116,12 @@ fi
 if [ -z ${WORD_STATS_TOP+x} ]; then 
 	
 	message="Environment variable 'WORD_STATS_TOP' is empty (using default 10)"
-	export WORD_STATS_TOP=10
+	WORD_STATS_TOP=10
 	
 elif [[ $WORD_STATS_TOP != *[[:digit:]]* ]]; then 
 
-	message="'$WORD_STATS_TOP' not a number (using default 10)"
-	export WORD_STATS_TOP=10
+	message="'$WORD_STATS_TOP' is not a number (using default 10)"
+	WORD_STATS_TOP=10
 	
 else
 
@@ -134,10 +134,10 @@ fi
 
 # result files
 
-resultFile="result--"$2.txt
-resultFilePng="result--"$2.png
-resultFileHtml="result--"$2.html
-dat="result--"$2.dat
+resultFile="result---"$2.txt
+resultFilePng="result---"$2.png
+resultFileHtml="result---"$2.html
+dat="result---"$2.dat
 
 
 
@@ -149,12 +149,12 @@ dat="result--"$2.dat
 
 function counting() {
 	
-	cat $file | \
-	egrep -oe "\b\w+\b" | \
-	sort | \
-	uniq -ci | \
-	sort -nr | \
-	sed 's/ \+/\t/g' | \
+	cat $file |
+	egrep -oe "\b\w+\b" |
+	sort |
+	uniq -ci |
+	sort -nr |
+	sed 's/ \+/\t/g' |
 	nl
 	
 }
@@ -165,13 +165,13 @@ function counting() {
 
 function withoutSw() {
 
-	cat $file | \
-	egrep -oe "\b\w+\b" | \
-	sort | \
-	uniq -ci | \
-	grep -viwf $stopwords | \
-	sort -nr | \
-	sed 's/ \+/\t/g' | \
+	cat $file |
+	egrep -oe "\b\w+\b" |
+	sort |
+	uniq -ci |
+	grep -viwf $stopwords |
+	sort -nr |
+	sed 's/ \+/\t/g' |
 	nl
 	
 }
@@ -185,21 +185,21 @@ function chart() {
 
 	head -n $WORD_STATS_TOP $resultFile > $dat
 	
-	echo " " > bar.gnuplot
+	echo " " > bar.gnuplot #makes sure the file is empty before sending the information
 	
 	{
 	
-	echo "set terminal png"
-	echo "set output \"$resultFilePng\""
-	echo "set title \"Top word occurrence chart\" font \"courrier, 20px\" textcolor \"#800080\" "
-	echo "set xlabel \"words\""
-	echo "set ylabel \"number of occurrences\""
-	echo "set xtics rotate"
-	echo "set boxwidth 0.5"
-	echo "set grid"
-	echo "set tics nomirror out scale 0.75"
-	echo "set style fill solid"
-	echo "plot \"$dat\" using 1:2:xtic(3) title \"# of occurrences\" with boxes, \
+	echo "set terminal png
+	set output \"$resultFilePng\"
+	set title \"Top word occurrence chart\" font \"courrier, 20px\" textcolor \"#800080\" 
+	set xlabel \"words\"
+	set ylabel \"number of occurrences\"
+	set xtics rotate
+	set boxwidth 0.5
+	set grid
+	set tics nomirror out scale 0.75
+	set style fill solid
+	plot \"$dat\" using 1:2:xtic(3) title \"# of occurrences\" with boxes, \
 	      \"$dat\" using 1:(2):2 notitle with labels"
 		
 	}>> bar.gnuplot
@@ -214,25 +214,26 @@ function chart() {
 
 function htmlfile() {
 
-	echo " " > $resultFileHtml
+	echo " " > $resultFileHtml #makes sure the file is empty before sending the information
 	data=$(date)
+	
 
 	{
-	echo "<!DOCTYPE html>"
-	echo "<html>"
-	echo "<head>"
-	echo "<title>Word Stats Chart</title>"
-	echo "</head>"
-	echo "<body style=\"background-color: #FFC0CB;margin: 100px\">" 
-	echo "<h1 style=\"color: #FF1493;text-align: center;font-size: 40px;line-height: 150px;font-family: Courier\">Top 5 words-'ficha01.pdf'</h1>"
-	echo "<p style=\"text-align: center;font-family: Courier\"> Top words for 'ficha01.pdf'</p>"
-	echo "<p style=\"text-align: center;font-family: Courier\"> Created: $data</p>"
-	echo "<p style=\"text-align: center;font-family: Courier\"> ($message)</p>"
-	echo "<p style=\"text-align: center\"><img src=\"$resultFilePng\"></p>"
-	echo "<p style=\"text-align: center;font-family: Courier\"> Authors: Barbie Chan</p>"
-	echo "<p style=\"text-align: center;font-family: Courier\"> Created: $data</p>"
-	echo "</body>"
-	echo "</html>"
+	echo "<!DOCTYPE html>
+	      <html>
+		  <head>
+		  <title>Word Stats Chart</title>
+		  </head>
+		  <body style=\"background-color: #FFC0CB;margin: 100px\"> 
+		  <h1 style=\"color: #FF1493;text-align: center;font-size: 40px;line-height: 150px;font-family: Courier\">Top 5 words-'$1'</h1>
+		  <p style=\"text-align: center;font-family: Courier\"> Top words for '$1'</p>
+		  <p style=\"text-align: center;font-family: Courier\"> Created: $data</p>
+		  <p style=\"text-align: center;font-family: Courier\"> ($message)</p>
+		  <p style=\"text-align: center\"><img src=\"$resultFilePng\"></p>
+		  <p style=\"text-align: center;font-family: Courier\"> Authors: Barbie Chan</p>
+		  <p style=\"text-align: center;font-family: Courier\"> Created: $data</p>
+		  </body>
+		  </html>"
 	}>> $resultFileHtml
 
 }
@@ -267,7 +268,7 @@ if [[ $1 == c ]]; then
   	echo -e ${NC} RESULTS: "'$resultFile'"
 
   	ls -la $resultFile
-  	echo -e $( wc -l < $resultFile ) distinct words
+  	echo $( wc -l < $resultFile ) distinct words
   	echo " "
   	echo " "
   	
@@ -294,7 +295,7 @@ elif [[ $1 == C ]]; then
   	echo -e ${NC} RESULTS: "'$resultFile'"
   
   	ls -la $resultFile
-  	echo -e $( wc -l < $resultFile ) distinct words
+  	echo $( wc -l < $resultFile ) distinct words
   	echo " "
   	echo " "
   	
@@ -311,7 +312,7 @@ elif [[ $1 == p ]]; then
   	echo " StopWords file '$sw': '$stopwords' ( $( wc -l < $stopwords ) words )"
   	withoutSw > $resultFile
     chart
-  	htmlfile
+  	htmlfile "$2"
   	echo " "
   	ls -la $dat
   	ls -la $resultFilePng
@@ -324,7 +325,7 @@ elif [[ $1 == p ]]; then
   
 
   	firefox $resultFileHtml 2> /dev/null
-
+	#redirects critical messages to void
   
   
 elif [[ $1 == P ]]; then
@@ -337,7 +338,7 @@ elif [[ $1 == P ]]; then
   	echo " STOP-WORDS will be counted"
   	counting > $resultFile
   	chart
-  	htmlfile
+  	htmlfile "$2"
   	echo " "
   	ls -la $dat
   	ls -la $resultFilePng
@@ -349,6 +350,7 @@ elif [[ $1 == P ]]; then
   	echo " "
   
   	firefox $resultFileHtml 2> /dev/null
+  	#redirects critical messages to void
 
   
   
