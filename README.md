@@ -25,7 +25,7 @@ Command:
 ./word_stats.sh Cc|Pp|Tt INPUT [iso3166]
 ```
 
-Ps: make sure you are in the same directory of the script
+Ps: make sure you are in the same directory of the script and StopWords folder
 
 Modes:
 + C : performs the count of occurrences of each word with stop-words, saving the list in a text file 
